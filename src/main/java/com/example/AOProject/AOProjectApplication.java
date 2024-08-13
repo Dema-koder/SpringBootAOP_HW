@@ -36,5 +36,9 @@ public class AOProjectApplication {
 		order.setDescription("DESCRIPTION");
 		order.setStatus("STATUS");
 		Order newOrder = orderService.createOrder(newUser.getId(), order);
+
+		var users = userService.getAllUsers();
+
+		var lst = orderService.getOrdersByUserId(1L);
 	}
 }

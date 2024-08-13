@@ -1,26 +1,79 @@
-# Getting Started
+# Документация: Реализация логирования с использованием Spring AOP
 
-### Reference Documentation
-For further reference, please consider the following sections:
+## Введение
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.3.2/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.3.2/maven-plugin/build-image.html)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/docs/3.3.2/reference/htmlsingle/index.html#data.sql.jpa-and-spring-data)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.3.2/reference/htmlsingle/index.html#web)
+В данном проекте мы реализовали логирование операций в сервисах, связанных с управлением пользователями и их заказами, используя технологию Aspect-Oriented Programming (AOP) в Spring. AOP позволяет отделить аспекты, такие как логирование, от основной бизнес-логики, что улучшает читаемость и сопровождение кода.
 
-### Guides
-The following guides illustrate how to use some features concretely:
+## Подход к реализации
 
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+1. **Создание аспекта**:
+    - Мы создали класс `LoggingAspect`, пометив его аннотацией `@Aspect` и `@Component`, чтобы сделать его аспектом и зарегистрировать в контексте Spring.
+    - В классе был определен `Pointcut`, который охватывает все методы сервисов `UserService` и `OrderService`.
+    - Использованы следующие советы AOP:
+        - `@Around`: Для логирования начала и конца выполнения метода, а также замера времени его выполнения.
+        
+2. **Логирование параметров и результатов**:
+    - Логирование параметров метода осуществляется путем извлечения аргументов метода через `ProceedingJoinPoint`.
+    - Результат метода логируется после успешного завершения вызова метода.
 
-### Maven Parent overrides
+3. **Логирование исключений**:
+    - В случае возникновения исключений, они перехватываются и логируются с указанием типа и сообщения об ошибке.
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+4. **Настройка логирования**:
+    - Для управления логированием используется `Logback` (дефолтная реализация в Spring Boot).
+    - Логи настраиваются через конфигурационный файл `logback.xml`, где указаны уровни логирования и аппендеры.
 
+## Отчет
+
+### Описание проекта
+
+Проект представляет собой Spring Boot приложение, состоящее из двух основных сервисов: `UserService` и `OrderService`. Каждый сервис предоставляет CRUD операции для управления пользователями и заказами. Для логирования всех операций в этих сервисах используется Spring AOP.
+
+### Инструкции по запуску
+
+1. **Склонируйте репозиторий**:
+   ```bash
+   git clone <URL-репозитория>
+   cd <название-проекта>
+   ```
+2. **Сборка и запуск**:
+    Проект собирается и запускается с использованием Maven или Gradle:
+    ```bash
+    ./mvnw spring-boot:run
+   ```
+3. **Конфигурация БД**:
+   Убедитесь, что в application.properties настроены правильные параметры подключения к базе данных.
+4. **Тестирование**:
+   Для запуска тестов используйте команду:
+    ```bash
+    ./mvnw test
+   ```
+
+### Примеры логов
+Примеры логов при вызове метода создания пользователя:
+```text
+INFO  - Выполнение метода createUser с аргументами [{null Ivan ivan@gmail.com}]
+INFO  - Метод createUser выполнился за 2 мс с результатом {2 Ivan ivan@gmail.com}
+```
+
+### Примеры тестов
+Пример теста для метода getAllUsers:
+```java
+@Test
+@DisplayName("Check logs around getAllUsers")
+void testLoggingGetAllUsers() {
+    var list = userService.getAllUsers();
+
+    assertThat(listAppender.list)
+       .extracting(ILoggingEvent::getFormattedMessage)
+          .anyMatch(message ->
+               message.contains("Выполнение метода getAllUsers с аргументами []"))
+          .anyMatch(message ->
+               message.contains("Метод getAllUsers выполнился за") &&
+                   message.contains("с результатом " + list.toString()));
+}
+```
+
+## Заключение
+
+Данная реализация логирования с использованием Spring AOP позволяет эффективно отделить аспекты логирования от бизнес-логики, обеспечивая централизованное управление логами. Это не только упрощает отладку и сопровождение, но и улучшает модульность приложения.

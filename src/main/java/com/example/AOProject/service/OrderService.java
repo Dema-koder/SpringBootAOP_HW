@@ -4,6 +4,7 @@ import com.example.AOProject.model.Order;
 import com.example.AOProject.model.User;
 import com.example.AOProject.repository.OrderRepository;
 import com.example.AOProject.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,13 @@ public class OrderService {
         orderRepository.deleteById(orderId);
     }
 
+    @Transactional
     public List<Order> getOrdersByUserId(Long userId) {
-        return userRepository.findById(userId).map(User::getOrders).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            user.getOrders().size();
+            return user.getOrders();
+        }
+        return null;
     }
 }

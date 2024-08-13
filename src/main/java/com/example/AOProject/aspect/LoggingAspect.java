@@ -2,10 +2,7 @@ package com.example.AOProject.aspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,7 +21,7 @@ public class LoggingAspect {
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
 
-        log.info("Выполнение метода {} с аргуменетами {}", methodName, args);
+        log.info("Выполнение метода {} с аргументами {}", methodName, args);
 
         Object result = joinPoint.proceed(args);
 
